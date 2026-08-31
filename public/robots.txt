@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mv-advogados.vercel.app/sitemap.xml
