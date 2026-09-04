@@ -13,13 +13,24 @@ export function AdminContentManager({ kind }: { kind: Kind }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const readResponse = async (response: Response) => {
+    const text = await response.text()
+    if (!text.trim()) return {}
+    try { return JSON.parse(text) } catch { return { error: 'Resposta inválida do servidor.' } }
+  }
+
   const load = async () => {
     setLoading(true)
-    const response = await fetch(`/api/admin/content?type=${kind}`, { cache: 'no-store' })
-    const data = await response.json()
-    if (!response.ok) setError(data.error ?? 'Não foi possível carregar o conteúdo.')
-    else setItems(data)
-    setLoading(false)
+    try {
+      const response = await fetch(`/api/admin/content?type=${kind}`, { cache: 'no-store' })
+      const data = await readResponse(response)
+      if (!response.ok) setError(data.error ?? 'Não foi possível carregar o conteúdo.')
+      else setItems(Array.isArray(data) ? data : [])
+    } catch {
+      setError('Não foi possível ligar ao servidor.')
+    } finally {
+      setLoading(false)
+    }
   }
   useEffect(() => { void load() }, [kind])
 
@@ -28,7 +39,7 @@ export function AdminContentManager({ kind }: { kind: Kind }) {
     setError('')
     const method = editing.id ? 'PATCH' : 'POST'
     const response = await fetch('/api/admin/content', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...editing, type: kind }) })
-    const data = await response.json()
+    const data = await readResponse(response)
     if (!response.ok) return setError(data.error ?? 'Não foi possível guardar.')
     setEditing(null)
     void load()
