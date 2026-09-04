@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { ArrowLeft, ImagePlus } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import { AdminContentManager } from '@/components/admin-content-manager'
 
 export default function AdminPhotosPage() {
   return (
@@ -13,7 +14,7 @@ export default function AdminPhotosPage() {
       <section className="admin-content">
         <header className="admin-topbar"><div><p className="admin-kicker">BIBLIOTECA VISUAL</p><h1>FOTOS</h1></div><div className="admin-avatar">C</div></header>
         <div className="admin-welcome"><p>Gestão de fotos</p><span>Adicione e organize as imagens do website institucional.</span></div>
-        <div className="admin-actions"><button type="button"><ImagePlus /> Adicionar Foto</button></div>
+        <AdminContentManager kind="photos" />
         <Link className="admin-back" href="/admin/painel"><ArrowLeft /> Voltar ao painel</Link>
       </section>
     </main>

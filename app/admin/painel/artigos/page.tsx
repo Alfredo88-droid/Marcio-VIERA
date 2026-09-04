@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { ArrowLeft, FileText } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import { AdminContentManager } from '@/components/admin-content-manager'
 
 export default function AdminArticlesPage() {
   return (
@@ -13,7 +14,7 @@ export default function AdminArticlesPage() {
       <section className="admin-content">
         <header className="admin-topbar"><div><p className="admin-kicker">PUBLICAÇÕES</p><h1>ARTIGOS</h1></div><div className="admin-avatar">C</div></header>
         <div className="admin-welcome"><p>Gestão de artigos</p><span>Crie e organize os conteúdos publicados no website institucional.</span></div>
-        <div className="admin-actions"><button type="button"><FileText /> Criar Artigo</button></div>
+        <AdminContentManager kind="articles" />
         <Link className="admin-back" href="/admin/painel"><ArrowLeft /> Voltar ao painel</Link>
       </section>
     </main>
