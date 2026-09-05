@@ -18,7 +18,7 @@ export default function AdminPanelPage() {
       <aside className="admin-sidebar">
         <Link href="/" className="admin-brand"><span>MV</span><b>ADVOGADO</b></Link>
         <div className="admin-sidebar-label">GESTÃO DO SITE</div>
-        <nav className="admin-side-nav"><a className="is-active" href="#fotos">Fotos</a><a href="#artigos">Artigos</a><a href="/#contactos">Ver site público <ExternalLink /></a></nav>
+        <nav className="admin-side-nav"><Link className="is-active" href="/admin/painel/fotos">Fotos</Link><Link href="/admin/painel/artigos">Artigos</Link><a href="/#contactos">Ver site público <ExternalLink /></a></nav>
         <Link className="admin-logout" href="/admin"><LogOut /> Sair</Link>
       </aside>
       <section className="admin-content">
