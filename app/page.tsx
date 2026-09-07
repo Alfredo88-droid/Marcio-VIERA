@@ -38,16 +38,19 @@ const loadPublishedPhotos = async (): Promise<PublishedPhoto[]> => {
   return response.json()
 }
 
-const insights = [
-  ['Análise', 'Contratos empresariais: o que deve ser analisado antes de assinar?', 'Conteúdo editável para o futuro centro de insights da MV-Advogado.'],
-  ['Estratégia', 'Como reduzir riscos jurídicos numa empresa?', 'Conteúdo editável para o futuro centro de insights da MV-Advogado.'],
-  ['Prevenção', 'A importância da assessoria jurídica preventiva', 'Conteúdo editável para o futuro centro de insights da MV-Advogado.'],
-]
+type PublishedArticle = { id: string; category: string; title: string; summary: string; content: string; cover_url: string | null; created_at: string }
+
+const loadPublishedArticles = async (): Promise<PublishedArticle[]> => {
+  const response = await fetch('/api/artigos?published=true')
+  if (!response.ok) throw new Error('Não foi possível carregar os artigos.')
+  return response.json()
+}
 
 export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { data: publishedPhotos = [] } = useSWR<PublishedPhoto[]>('published-photos', loadPublishedPhotos)
+  const { data: publishedArticles = [] } = useSWR<PublishedArticle[]>('published-articles', loadPublishedArticles)
   if (typeof window !== 'undefined') window.onscroll = () => setScrolled(window.scrollY > 24)
 
   const closeMenu = () => setMenuOpen(false)
@@ -89,7 +92,7 @@ export default function Page() {
 
       <section id="equipa" className="section team-section"><div className="container team-layout"><div><p className="eyebrow eyebrow-dark">PESSOAS POR TRÁS DA PRÁTICA</p><h2>Conheça a nossa <em>equipa.</em></h2><p>Profissionais preparados para compreender o que está em jogo e trabalhar consigo com discrição, clareza e rigor.</p><a className="text-link" href="#contactos">Falar com a equipa <ArrowUpRight /></a></div><div className="profile-card"><div className="profile-image"><div className="profile-placeholder">MV</div></div><div><p className="eyebrow eyebrow-dark">PERFIL EDITÁVEL</p><h3>[Nome do Advogado]</h3><p className="profile-role">Sócio / Advogado</p><p className="profile-specialty">[Especialidade jurídica]</p><a href="#contactos" className="text-link">Ver perfil <ArrowUpRight /></a></div></div></div></section>
 
-      <section id="insights" className="section insights-section"><div className="container"><div className="section-heading"><div><p className="eyebrow eyebrow-dark">CONHECIMENTO PARTILHADO</p><h2>Insights <em>Jurídicos</em></h2></div><p>Informação jurídica para decisões mais conscientes.</p></div><div className="insights-grid">{insights.map(([category, title, summary]) => <article className="insight-card" key={title}><span>{category}</span><small>Conteúdo editável · 2026</small><h3>{title}</h3><p>{summary}</p><a href="#contactos">Ler artigo <ArrowUpRight /></a></article>)}</div></div></section>
+      <section id="insights" className="section insights-section"><div className="container"><div className="section-heading"><div><p className="eyebrow eyebrow-dark">CONHECIMENTO PARTILHADO</p><h2>Insights <em>Jurídicos</em></h2></div><p>Informação jurídica para decisões mais conscientes.</p></div><div className="insights-grid">{publishedArticles.length > 0 ? publishedArticles.map((article) => <article className="insight-card" key={article.id}>{article.cover_url && <img src={article.cover_url} alt="" loading="lazy" />}<span>{article.category}</span><small>{new Date(article.created_at).getFullYear()}</small><h3>{article.title}</h3><p>{article.summary}</p><details><summary>Ler artigo <ArrowUpRight /></summary><p>{article.content}</p></details></article>) : <p className="content-empty">Ainda não existem artigos publicados.</p>}</div></div></section>
 
       {publishedPhotos.length > 0 && <section className="section public-gallery-section"><div className="container"><div className="section-heading"><div><p className="eyebrow eyebrow-dark">BIBLIOTECA VISUAL</p><h2>O espaço da <em>MV-Advogado.</em></h2></div><p>Conheça o ambiente e a identidade que acompanham a nossa prática.</p></div><div className="public-gallery-grid">{publishedPhotos.map((photo) => <figure key={photo.id}><img src={photo.image_url} alt={photo.title} loading="lazy" /><figcaption>{photo.title}</figcaption></figure>)}</div></div></section>}
 
