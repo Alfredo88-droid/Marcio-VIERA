@@ -12,7 +12,7 @@ type Photo = { id: string; title: string; detail: string | null; image_url: stri
 async function loadPhotos() {
   if (typeof window === 'undefined') return []
   const response = await fetch('/api/fotos')
-  if (!response.ok) throw new Error('Não foi possível carregar as fotos.')
+  if (!response.ok) throw new Error('Não foi possível carregar as fotos. Verifique a tabela photos e suas permissões no Supabase.')
   return (await response.json()) as Photo[]
 }
 
@@ -63,7 +63,7 @@ export default function AdminPanelPage() {
     <aside className="admin-sidebar"><Link href="/" className="admin-brand"><span>MV</span><b>ADVOGADO</b></Link><div className="admin-sidebar-label">GESTÃO DO SITE</div><nav className="admin-side-nav"><Link className="is-active" href="/admin/painel/fotos">Fotos</Link><Link href="/admin/painel/artigos">Artigos</Link><Link href="/#contactos">Ver site público <ExternalLink /></Link></nav><Link className="admin-logout" href="/admin"><LogOut /> Sair</Link></aside>
     <section className="admin-content"><header className="admin-topbar"><div><p className="admin-kicker">MV-ADVOGADO</p><h1>PAINEL ADMINISTRATIVO</h1></div><div className="admin-avatar">C</div></header><div className="admin-welcome"><p>Olá, Cliente</p><span>Gerencie os conteúdos que aparecem no website institucional.</span></div>
       <div className="admin-actions"><input ref={inputRef} type="file" accept="image/*" onChange={uploadPhoto} hidden /><button type="button" onClick={() => inputRef.current?.click()} disabled={busy}>{busy ? <Loader2 className="animate-spin" /> : <ImagePlus />} {busy ? 'A carregar...' : 'Adicionar Foto'}</button><Link className="admin-secondary-link" href="/admin/painel/artigos"><FileText /> Criar Artigo</Link></div>
-      {message && <p role="status" className="admin-feedback">{message}</p>}{error && <p role="alert" className="admin-feedback">Não foi possível carregar o conteúdo. Verifique as permissões da tabela photos.</p>}
+      {message && <p role="status" className="admin-feedback">{message}</p>}{error && <p role="alert" className="admin-feedback">Não foi possível carregar o conteúdo da tabela photos. Verifique se ela está exposta à API e se as permissões estão configuradas.</p>}
       <section id="fotos" className="admin-section"><div className="admin-section-heading"><div><p className="admin-kicker">BIBLIOTECA VISUAL</p><h2>Fotos</h2></div><span>{photos.length} itens</span></div><div className="admin-list">{photos.map((photo) => <article className="admin-list-item" key={photo.id}><img className="admin-photo-thumb" src={photo.image_url} alt="" /><div className="admin-item-copy"><h3>{photo.title}</h3><p>{photo.detail ?? 'Fotografia da biblioteca visual'} · {photo.published ? 'Publicado' : 'Rascunho'}</p></div><div className="admin-item-actions"><button type="button" onClick={() => togglePublished(photo)} aria-label={photo.published ? `Despublicar ${photo.title}` : `Publicar ${photo.title}`}>{photo.published ? <EyeOff /> : <Eye />}</button><button type="button" onClick={() => removePhoto(photo)} aria-label={`Apagar ${photo.title}`}><Trash2 /></button></div></article>)}</div></section>
       <section id="artigos" className="admin-section"><div className="admin-section-heading"><div><p className="admin-kicker">PUBLICAÇÕES</p><h2>Artigos</h2></div><span>0 itens</span></div></section>
     </section>

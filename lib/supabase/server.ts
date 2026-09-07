@@ -2,12 +2,12 @@ import { createClient } from '@supabase/supabase-js'
 
 export function createServerClient() {
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY
+  const key = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!url || !key) throw new Error('Supabase server configuration is missing.')
   return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } })
 }
 
-export const PHOTO_TABLE = 'fotos'
+export const PHOTO_TABLE = 'photos'
 export const PHOTO_BUCKET = 'fotos'
 
 type PhotoRow = { id: string; title: string; detail: string | null; image_url: string; published: boolean; created_at: string; storage_path?: string | null }
