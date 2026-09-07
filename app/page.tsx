@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import useSWR from 'swr'
 import { ArrowUpRight, ChevronDown, ChevronRight, Menu, X, Scale, BriefcaseBusiness, FileText, ShieldCheck, Landmark, Gavel, MessageCircle, Mail, Phone, MapPin, Clock3 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 const officeImage = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/FireShot%20Capture%20063%20-%20MV%20ADVOGADO%20-%20Google%20Maps%20-%20%5Bwww.google.com%5D-LctlSW3rBALqj1iaV8TlnQClDU89ph.png'
 const identityImage = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/FireShot%20Capture%20065%20-%20MV%20ADVOGADO%20-%20Google%20Maps%20-%20%5Bwww.google.com%5D-UATnZLgVLfrOdknLCdB7qYt3cwAuvT.png'
@@ -28,6 +30,14 @@ const pillars = [
   ['04', 'Confidencialidade', 'Tratamos cada relação profissional com máxima discrição e responsabilidade.'],
 ]
 
+const loadPublishedPhotos = async () => {
+  if (typeof window === 'undefined') return []
+  const publicSupabase = createClient()
+  const { data, error } = await publicSupabase.from('photos').select('id,title,image_url').eq('published', true).order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
 const insights = [
   ['Análise', 'Contratos empresariais: o que deve ser analisado antes de assinar?', 'Conteúdo editável para o futuro centro de insights da MV-Advogado.'],
   ['Estratégia', 'Como reduzir riscos jurídicos numa empresa?', 'Conteúdo editável para o futuro centro de insights da MV-Advogado.'],
@@ -37,6 +47,7 @@ const insights = [
 export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { data: publishedPhotos = [] } = useSWR('published-photos', loadPublishedPhotos)
   if (typeof window !== 'undefined') window.onscroll = () => setScrolled(window.scrollY > 24)
 
   const closeMenu = () => setMenuOpen(false)
@@ -79,6 +90,8 @@ export default function Page() {
       <section id="equipa" className="section team-section"><div className="container team-layout"><div><p className="eyebrow eyebrow-dark">PESSOAS POR TRÁS DA PRÁTICA</p><h2>Conheça a nossa <em>equipa.</em></h2><p>Profissionais preparados para compreender o que está em jogo e trabalhar consigo com discrição, clareza e rigor.</p><a className="text-link" href="#contactos">Falar com a equipa <ArrowUpRight /></a></div><div className="profile-card"><div className="profile-image"><div className="profile-placeholder">MV</div></div><div><p className="eyebrow eyebrow-dark">PERFIL EDITÁVEL</p><h3>[Nome do Advogado]</h3><p className="profile-role">Sócio / Advogado</p><p className="profile-specialty">[Especialidade jurídica]</p><a href="#contactos" className="text-link">Ver perfil <ArrowUpRight /></a></div></div></div></section>
 
       <section id="insights" className="section insights-section"><div className="container"><div className="section-heading"><div><p className="eyebrow eyebrow-dark">CONHECIMENTO PARTILHADO</p><h2>Insights <em>Jurídicos</em></h2></div><p>Informação jurídica para decisões mais conscientes.</p></div><div className="insights-grid">{insights.map(([category, title, summary]) => <article className="insight-card" key={title}><span>{category}</span><small>Conteúdo editável · 2026</small><h3>{title}</h3><p>{summary}</p><a href="#contactos">Ler artigo <ArrowUpRight /></a></article>)}</div></div></section>
+
+      {publishedPhotos.length > 0 && <section className="section public-gallery-section"><div className="container"><div className="section-heading"><div><p className="eyebrow eyebrow-dark">BIBLIOTECA VISUAL</p><h2>O espaço da <em>MV-Advogado.</em></h2></div><p>Conheça o ambiente e a identidade que acompanham a nossa prática.</p></div><div className="public-gallery-grid">{publishedPhotos.map((photo) => <figure key={photo.id}><img src={photo.image_url} alt={photo.title} loading="lazy" /><figcaption>{photo.title}</figcaption></figure>)}</div></div></section>}
 
       <section className="cta-section"><div className="container cta-inner"><p className="eyebrow">UM PRÓXIMO PASSO CLARO</p><h2>A sua questão jurídica merece uma <em>estratégia clara.</em></h2><p>Fale com a MV-Advogado e descubra como podemos analisar o seu caso.</p><div className="button-row"><a className="button button-gold" href="#contactos">Agendar Consulta <ArrowUpRight /></a><a className="button button-ghost" href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer">Falar pelo WhatsApp <MessageCircle /></a></div></div></section>
 
