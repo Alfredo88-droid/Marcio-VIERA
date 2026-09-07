@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import useSWR from 'swr'
 import { ArrowUpRight, ChevronDown, ChevronRight, Menu, X, Scale, BriefcaseBusiness, FileText, ShieldCheck, Landmark, Gavel, MessageCircle, Mail, Phone, MapPin, Clock3 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 
 const officeImage = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/FireShot%20Capture%20063%20-%20MV%20ADVOGADO%20-%20Google%20Maps%20-%20%5Bwww.google.com%5D-LctlSW3rBALqj1iaV8TlnQClDU89ph.png'
 const identityImage = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/FireShot%20Capture%20065%20-%20MV%20ADVOGADO%20-%20Google%20Maps%20-%20%5Bwww.google.com%5D-UATnZLgVLfrOdknLCdB7qYt3cwAuvT.png'
@@ -30,12 +29,13 @@ const pillars = [
   ['04', 'Confidencialidade', 'Tratamos cada relação profissional com máxima discrição e responsabilidade.'],
 ]
 
-const loadPublishedPhotos = async () => {
+type PublishedPhoto = { id: string; title: string; image_url: string }
+
+const loadPublishedPhotos = async (): Promise<PublishedPhoto[]> => {
   if (typeof window === 'undefined') return []
-  const publicSupabase = createClient()
-  const { data, error } = await publicSupabase.from('photos').select('id,title,image_url').eq('published', true).order('created_at', { ascending: false })
-  if (error) throw error
-  return data ?? []
+  const response = await fetch('/api/fotos?published=true')
+  if (!response.ok) throw new Error('Não foi possível carregar as fotos.')
+  return response.json()
 }
 
 const insights = [
@@ -47,7 +47,7 @@ const insights = [
 export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const { data: publishedPhotos = [] } = useSWR('published-photos', loadPublishedPhotos)
+  const { data: publishedPhotos = [] } = useSWR<PublishedPhoto[]>('published-photos', loadPublishedPhotos)
   if (typeof window !== 'undefined') window.onscroll = () => setScrolled(window.scrollY > 24)
 
   const closeMenu = () => setMenuOpen(false)

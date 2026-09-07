@@ -4,7 +4,6 @@ import { ChangeEvent, useRef, useState } from 'react'
 import Link from 'next/link'
 import useSWR from 'swr'
 import { ImagePlus, FileText, Pencil, Trash2, LogOut, ExternalLink, Eye, EyeOff, Loader2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 
 const BUCKET = 'fotos'
 
@@ -12,10 +11,9 @@ type Photo = { id: string; title: string; detail: string | null; image_url: stri
 
 async function loadPhotos() {
   if (typeof window === 'undefined') return []
-  const supabase = createClient()
-  const { data, error } = await supabase.from('photos').select('id,title,detail,image_url,published,created_at').order('created_at', { ascending: false })
-  if (error) throw error
-  return (data ?? []) as Photo[]
+  const response = await fetch('/api/fotos')
+  if (!response.ok) throw new Error('Não foi possível carregar as fotos.')
+  return (await response.json()) as Photo[]
 }
 
 export default function AdminPanelPage() {
@@ -33,17 +31,12 @@ export default function AdminPanelPage() {
 
     setBusy(true); setMessage('')
     try {
-      const supabase = createClient()
-      const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-      const path = `${crypto.randomUUID()}.${extension}`
-      const upload = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false })
-      if (upload.error) throw upload.error
-      const { data: publicFile } = supabase.storage.from(BUCKET).getPublicUrl(path)
-      const { error: insertError } = await supabase.from('photos').insert({ title: file.name.replace(/\.[^/.]+$/, ''), detail: 'Fotografia da biblioteca visual', image_url: publicFile.publicUrl, published: true, storage_path: path })
-      if (insertError) {
-        await supabase.storage.from(BUCKET).remove([path])
-        throw insertError
-      }
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('title', file.name.replace(/\.[^/.]+$/, ''))
+      const response = await fetch('/api/fotos', { method: 'POST', body: formData })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Não foi possível carregar a foto.')
       await mutate()
       setMessage('Foto carregada e publicada com sucesso.')
     } catch (uploadError) {
@@ -52,18 +45,16 @@ export default function AdminPanelPage() {
   }
 
   const togglePublished = async (photo: Photo) => {
-    const supabase = createClient()
-    const { error: updateError } = await supabase.from('photos').update({ published: !photo.published }).eq('id', photo.id)
-    if (updateError) return setMessage(updateError.message)
+    const response = await fetch('/api/fotos', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: photo.id, published: !photo.published }) })
+    if (!response.ok) return setMessage((await response.json()).error || 'Não foi possível atualizar a foto.')
     await mutate()
   }
 
   const removePhoto = async (photo: Photo) => {
     if (!window.confirm(`Apagar “${photo.title}”?`)) return
     setBusy(true)
-    const supabase = createClient()
-    const { error: deleteError } = await supabase.from('photos').delete().eq('id', photo.id)
-    if (deleteError) setMessage(deleteError.message)
+    const response = await fetch('/api/fotos', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: photo.id }) })
+    if (!response.ok) setMessage((await response.json()).error || 'Não foi possível apagar a foto.')
     else { await mutate(); setMessage('Foto apagada.') }
     setBusy(false)
   }
